@@ -6,20 +6,21 @@ This is the class project for CSC13114 (Advanced Web Application Development), c
 
 ## Team
 
-| Student ID | Name           |
-| ---------- | -------------- |
-| 23127228   | Phạm Văn Minh  |
-| 23127395   | Trần Anh Khoa  |
+| Student ID | Name          |
+| ---------- | ------------- |
+| 23127228   | Phạm Văn Minh |
+| 23127395   | Trần Anh Khoa |
 
 ## Stack
 
-| Layer          | Choice                         |
-| -------------- | ------------------------------ |
-| Frontend       | Next.js + TypeScript           |
-| Backend        | NestJS + TypeScript            |
-| Database       | PostgreSQL + Prisma            |
-| Media storage  | Cloudinary                     |
-| Monorepo       | pnpm workspaces                |
+| Layer         | Choice               |
+| ------------- | -------------------- |
+| Frontend      | Next.js + TypeScript |
+| Backend       | NestJS + TypeScript  |
+| Database      | PostgreSQL + Prisma  |
+| Sign-in       | Supabase Auth        |
+| Media storage | Cloudinary           |
+| Monorepo      | pnpm workspaces      |
 
 ```
 apps/web     Next.js frontend (holds no secrets and makes no model calls)
@@ -27,16 +28,27 @@ apps/api     NestJS backend (agent, tools, validator, Prisma)
 docs/        endpoint contracts
 ```
 
+### Sign-in
+
+Supabase Auth does sign-in only: passwords, email confirmation and password reset. Every other table, users' profiles included, is ours, in PostgreSQL through Prisma.
+
+1. `apps/web` signs the user in with Supabase and receives an access token (a JWT signed by Supabase).
+2. It sends that token to `apps/api` as `Authorization: Bearer <token>`.
+3. `apps/api` verifies the signature against the project's public signing keys (JWKS at `SUPABASE_URL`), the issuer, the audience and the expiry. It takes the user id from the token's `sub`, never from the request body.
+
+We sign no tokens ourselves, so there is no `JWT_SECRET`, and the API holds no Supabase secret. The publishable key in `apps/web` is public by design. Our tables are not in the Supabase project, so that key cannot reach them through Supabase's Data API.
+
 ## Getting started
 
-Prerequisites: Node.js 22 or newer, pnpm (`npm install -g pnpm`), and Docker for the local PostgreSQL.
+Prerequisites: Node.js 22.12 or newer (CI uses the version in [`.nvmrc`](.nvmrc)), pnpm (`npm install -g pnpm`), and Docker for the local PostgreSQL.
 
 ```bash
 git clone https://github.com/TimTmi/ai-travel-planner.git
 cd ai-travel-planner
-pnpm install --frozen-lockfile
+pnpm install --frozen-lockfile  # also generates the Prisma client
 
 cp .env.example .env          # then fill in your own values; .env is git-ignored
+                              # DATABASE_URL must match the POSTGRES_* values
 docker compose up -d db       # local PostgreSQL
 pnpm db:migrate               # apply Prisma migrations
 pnpm dev                      # starts web and api
@@ -46,17 +58,17 @@ pnpm dev                      # starts web and api
 
 ## Checks
 
-Each check is one command. CI runs exactly these commands, in this order, on every pull request to `main`:
+Each check is one command. CI runs exactly these commands, each as its own job, on every pull request to `main`, on every push to `main` and on every `pa*` tag:
 
-| Check           | Command              |
-| --------------- | -------------------- |
-| Lint            | `pnpm lint`          |
-| Format check    | `pnpm format:check`  |
-| Type check      | `pnpm typecheck`     |
-| Tests           | `pnpm test`          |
-| Contract tests  | `pnpm test:contract` |
+| Check          | Command              |
+| -------------- | -------------------- |
+| Lint           | `pnpm lint`          |
+| Format check   | `pnpm format:check`  |
+| Type check     | `pnpm typecheck`     |
+| Tests          | `pnpm test`          |
+| Contract tests | `pnpm test:contract` |
 
-`pnpm test` covers the unit tests, which never call a real model. `pnpm test:contract` needs the database from `docker compose up -d db`. To fix formatting locally, run `pnpm format`.
+`pnpm test` covers the unit tests, which need no database and never call a real model. `pnpm test:contract` starts the real API against the database in `DATABASE_URL`, so run `docker compose up -d db` and `pnpm db:migrate` first; CI gives it a throwaway PostgreSQL. To fix formatting locally, run `pnpm format`.
 
 The CI workflow is in [`.github/workflows/ci.yml`](.github/workflows/ci.yml). `main` is protected: every check above must pass before a pull request can merge, and nobody pushes to `main` directly.
 
@@ -81,7 +93,7 @@ Rules the code enforces (fixed for every team by section 3 of the class brief):
 - Model output is validated against a schema before the validator sees it.
 - The validator runs in the backend, and both user confirmations stay. Nothing reaches the group before Save.
 - Limits per plan: 2 repair rounds, 12 tool calls, 90 seconds.
-- API keys stay in the backend and never reach the browser. Only places and interests go to the model, never names or email addresses.
+- API keys stay in the backend and never reach the browser. The only key in `apps/web` is Supabase's publishable key, which is public by design. Only places and interests go to the model, never names or email addresses.
 
 ## Working with an AI assistant
 
@@ -89,8 +101,8 @@ The rules our coding assistant follows, including its allowed / ask-first / neve
 
 ## Course submissions
 
-| Checkpoint | File                                                           |
-| ---------- | -------------------------------------------------------------- |
+| Checkpoint | File                                                                         |
+| ---------- | ---------------------------------------------------------------------------- |
 | PA#2       | [`PA2.md`](PA2.md), [`SELF_ASSESSMENT_REPORT.md`](SELF_ASSESSMENT_REPORT.md) |
 
 ## Product-owner decisions
