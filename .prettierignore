@@ -1,0 +1,6 @@
+pnpm-lock.yaml
+apps/api/src/generated/
+apps/web/next-env.d.ts
+.next/
+dist/
+coverage/

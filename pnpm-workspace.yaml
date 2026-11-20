@@ -1,0 +1,14 @@
+packages:
+  - apps/*
+minimumReleaseAgeExclude:
+  - '@nestjs/common@12.6.0'
+  - '@nestjs/core@12.6.0'
+  - '@nestjs/platform-express@12.6.0'
+  - '@nestjs/cli@12.0.15'
+  - '@nestjs/testing@12.6.0'
+
+# Dependencies allowed to run install scripts. pnpm blocks all others.
+allowBuilds:
+  '@prisma/engines': true
+  '@swc/core': true
+  prisma: true
