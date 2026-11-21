@@ -74,9 +74,7 @@ The CI workflow is in [`.github/workflows/ci.yml`](.github/workflows/ci.yml). `m
 
 ## Endpoint contract
 
-The contract for our chosen endpoint lives in [`docs/contract/`](docs/contract/). It covers who may call the endpoint, the request and response shapes, every error as RFC 9457 problem details, and idempotency or paging. The contract tests (`pnpm test:contract`) hold the code to that file.
-
-<!-- TODO: link the exact contract file once the endpoint is chosen -->
+Our chosen endpoint is `PUT /v1/groups/{groupId}/members/{userId}/spending-cap`, where a group member sets their own spending cap. Its contract is [`docs/contract/spending-cap.md`](docs/contract/spending-cap.md). It covers who may call the endpoint, the request and response shapes, every error as RFC 9457 problem details, idempotency, and what happens to a saved plan the new cap no longer fits. The contract tests (`pnpm test:contract`) hold the code to that file.
 
 ## The model and its cost
 
