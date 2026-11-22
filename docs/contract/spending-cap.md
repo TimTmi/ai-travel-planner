@@ -128,16 +128,18 @@ Request body:
 - `capVnd` is a JSON number with no fractional part: `600000`, `600000.0` and `6e5` are the same value; `600000.5` is not an integer.
 - `0` is a valid cap: the member plans to spend nothing.
 - A body that is missing, empty, not sent as `application/json`, or valid JSON but not an object is a `validation` error with pointer `""`.
+- A body larger than 16 KB (16,384 bytes) is a `validation` error with pointer `""`. The server stops reading at that limit and does not parse the body.
 
 The server checks, **in this order**, and stops at the first step that fails:
 
 1. The caller is authenticated (section 2), else `401 unauthenticated`.
 2. `groupId` is a UUID, the group exists and the caller is a member, else `404 not-found`.
 3. `userId` is the caller's own id, else `403 forbidden`.
-4. A non-empty body sent as `application/json` is valid JSON, else `400 invalid-json`.
-5. The body follows the table above, else `400 validation`, listing every broken rule.
-6. `capVnd` is `null` or at most the group's `totalVnd`, else `422 cap-above-group-total`, with one `errors` entry with pointer `/capVnd`, and `groupTotalVnd`. Nothing is changed.
-7. The cap is stored and every saved plan of the group is checked against it, in one transaction: **`200`**, with the SpendingCap as the body.
+4. The body is at most 16 KB, else `400 validation`, with one `errors` entry with pointer `""`.
+5. A non-empty body sent as `application/json` is valid JSON, else `400 invalid-json`.
+6. The body follows the table above, else `400 validation`, listing every broken rule.
+7. `capVnd` is `null` or at most the group's `totalVnd`, else `422 cap-above-group-total`, with one `errors` entry with pointer `/capVnd`, and `groupTotalVnd`. Nothing is changed.
+8. The cap is stored and every saved plan of the group is checked against it, in one transaction: **`200`**, with the SpendingCap as the body.
 
 A request that fails at any step changes nothing.
 
