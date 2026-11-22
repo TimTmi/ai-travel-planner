@@ -2,6 +2,7 @@ import type { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import type { App } from 'supertest/types';
 import { AppModule } from '../../src/app.module';
+import { APP_OPTIONS } from '../../src/app.options';
 import { PrismaService } from '../../src/prisma.service';
 import { createLocalAuthEnv, type LocalAuthEnv } from './test-auth';
 
@@ -19,7 +20,7 @@ export async function createTestApp(): Promise<TestAppHarness> {
     imports: [AppModule],
   }).compile();
 
-  const app = moduleRef.createNestApplication<INestApplication<App>>();
+  const app = moduleRef.createNestApplication<INestApplication<App>>(APP_OPTIONS);
   await app.init();
 
   const prisma = app.get(PrismaService);

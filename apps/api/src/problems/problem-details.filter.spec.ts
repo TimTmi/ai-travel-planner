@@ -67,25 +67,6 @@ describe('ProblemDetailsFilter', () => {
     expect(res.type).toHaveBeenCalledWith('application/problem+json');
   });
 
-  it('maps Express body-parser SyntaxError to 400 invalid-json', () => {
-    const { host, res } = createHost();
-    const syntaxErr = Object.assign(new SyntaxError('Unexpected token }'), {
-      status: 400,
-      type: 'entity.parse.failed',
-    });
-
-    filter.catch(syntaxErr, host);
-
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.type).toHaveBeenCalledWith('application/problem+json');
-    expect(res.json).toHaveBeenCalledWith({
-      type: `${PROBLEM_BASE_URI}invalid-json`,
-      title: 'Malformed JSON',
-      status: 400,
-      detail: 'The request body is not valid JSON.',
-    });
-  });
-
   it.each([new NotFoundException('Cannot GET /v1/missing'), new MethodNotAllowedException()])(
     'maps missing route or method to 404 not-found',
     (exception) => {

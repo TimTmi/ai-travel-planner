@@ -14,20 +14,9 @@ interface HttpResponse {
   json(body: unknown): unknown;
 }
 
-function isMalformedJsonError(exception: unknown): boolean {
-  if (typeof exception !== 'object' || exception === null) return false;
-  const record = exception as Record<string, unknown>;
-  if (record['type'] === 'entity.parse.failed') return true;
-  return exception instanceof SyntaxError && record['status'] === 400;
-}
-
 function toProblemException(exception: unknown): ProblemException {
   if (exception instanceof ProblemException) {
     return exception;
-  }
-
-  if (isMalformedJsonError(exception)) {
-    return new ProblemException('invalid-json', 'The request body is not valid JSON.');
   }
 
   if (exception instanceof NotFoundException || exception instanceof MethodNotAllowedException) {
