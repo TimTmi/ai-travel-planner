@@ -31,6 +31,17 @@ describe('API harness', () => {
     });
   });
 
+  it('does not parse the body before routing and guards: malformed JSON on an unknown path is 404', async () => {
+    const res = await request(harness.app.getHttpServer())
+      .post('/v1/does-not-exist')
+      .set('Content-Type', 'application/json')
+      .send('{"capVnd":');
+
+    expect(res.status).toBe(404);
+    expect(res.headers['content-type']).toMatch(/^application\/problem\+json/);
+    expect(res.body).toMatchObject({ type: `${PROBLEM_BASE_URI}not-found`, status: 404 });
+  });
+
   it('persists and resets User, Group, GroupMember and Plan records with BigInt VND values', async () => {
     const userId = '7d2f9c41-8a3b-4e6d-b5c0-1e9f2a7d4c68';
     const groupId = '0b6c3a2e-5d1f-4c8a-9e7b-2f4d6a8c0e13';
