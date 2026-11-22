@@ -8,7 +8,9 @@ Hạn nộp: **Thứ Năm 26/11/2026, 22:00**. Endpoint đã chọn: `PUT /group
 | ------------------ | -------------------------------------------------------------- |
 | P0 · Scaffold + CI | ✅ Xong (20/11). CI xanh cả 5 job                              |
 | P1 · Bảo vệ `main` | ✅ Đã bật, 5 check bắt buộc. Còn: ảnh chụp màn hình cho PA2.md |
-| A1–A4, B1–B4       | Chưa bắt đầu                                                   |
+| A1 · Contract      | ✅ Xong (21/11), PR #2                                         |
+| B1 · Harness       | ✅ Xong (22/11), PR #3                                         |
+| A2–A4, B2–B4       | Chưa bắt đầu                                                   |
 | D · Nộp bài        | Chưa bắt đầu                                                   |
 
 ## Sơ đồ phụ thuộc
