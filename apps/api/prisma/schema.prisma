@@ -9,3 +9,53 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum PlanStatus {
+  DRAFT
+  SAVED
+}
+
+model User {
+  id        String        @id @db.Uuid
+  createdAt DateTime      @default(now()) @map("created_at")
+  members   GroupMember[]
+
+  @@map("users")
+}
+
+model Group {
+  id        String        @id @default(uuid()) @db.Uuid
+  totalVnd  BigInt        @map("total_vnd")
+  createdAt DateTime      @default(now()) @map("created_at")
+  members   GroupMember[]
+  plans     Plan[]
+
+  @@map("groups")
+}
+
+model GroupMember {
+  groupId   String   @map("group_id") @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  capVnd    BigInt?  @map("cap_vnd")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([groupId, userId])
+  @@map("group_members")
+}
+
+model Plan {
+  id                    String     @id @default(uuid()) @db.Uuid
+  groupId               String     @map("group_id") @db.Uuid
+  status                PlanStatus @default(SAVED)
+  highestMemberSpendVnd BigInt     @map("highest_member_spend_vnd")
+  needsReview           Boolean    @default(false) @map("needs_review")
+  createdAt             DateTime   @default(now()) @map("created_at")
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@map("plans")
+}
