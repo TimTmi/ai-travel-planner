@@ -529,17 +529,18 @@ describe('PUT /v1/groups/{groupId}/members/{userId}/spending-cap', () => {
 
   describe('section 4: the SpendingCap response', () => {
     it('stores the cap and answers 200 with the SpendingCap', async () => {
-      const res = await putCap({ json: { capVnd: 700_000 } });
+      // 750,000: every saved plan of GROUP fits (PLAN_750 exactly), so none is affected.
+      const res = await putCap({ json: { capVnd: 750_000 } });
 
       const body = expectSpendingCap(res);
       expect(body).toMatchObject({
         groupId: GROUP,
         userId: ALICE,
-        capVnd: 700_000,
+        capVnd: 750_000,
         affectedPlans: [],
       });
       expect(Date.parse(body['updatedAt'] as string)).toBeGreaterThan(Date.parse(SEEDED_AT));
-      expect(await storedCap(GROUP, ALICE)).toBe(700_000n);
+      expect(await storedCap(GROUP, ALICE)).toBe(750_000n);
     });
 
     it('accepts 0 as a cap', async () => {
