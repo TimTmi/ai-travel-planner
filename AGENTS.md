@@ -14,16 +14,17 @@ Project rules for AI coding assistants working on **AI Travel Planner**. `CLAUDE
 
 Run from the repository root (CI runs the exact same commands):
 
-| Task                 | Command                             |
-| -------------------- | ----------------------------------- |
-| Lint (zero warnings) | `pnpm lint`                         |
-| Format / check       | `pnpm format` / `pnpm format:check` |
-| Type check           | `pnpm typecheck`                    |
-| Unit tests (no DB)   | `pnpm test`                         |
-| Contract tests (DB)  | `pnpm test:contract`                |
-| Local PostgreSQL     | `docker compose up -d db`           |
-| Apply migrations     | `pnpm db:migrate`                   |
-| Dev servers          | `pnpm dev`                          |
+| Task                  | Command                                                                                             |
+| --------------------- | --------------------------------------------------------------------------------------------------- |
+| Lint (zero warnings)  | `pnpm lint`                                                                                         |
+| Format / check        | `pnpm format` / `pnpm format:check`                                                                 |
+| Type check            | `pnpm typecheck`                                                                                    |
+| Unit tests (no DB)    | `pnpm test`                                                                                         |
+| Contract tests (DB)   | `pnpm test:contract`                                                                                |
+| Secret scan (history) | `docker run --rm -v "$PWD:/repo:ro" ghcr.io/gitleaks/gitleaks:v8.29.0 git /repo --redact --verbose` |
+| Local PostgreSQL      | `docker compose up -d db`                                                                           |
+| Apply migrations      | `pnpm db:migrate`                                                                                   |
+| Dev servers           | `pnpm dev`                                                                                          |
 
 ## Conventions
 
@@ -49,6 +50,9 @@ Run from the repository root (CI runs the exact same commands):
   - Never add a `.swcrc` that emits CommonJS — it breaks Vitest loading (`AI-LOG.md`, 2026-11-20).
   - Never drop `--max-warnings 0` from ESLint (`AI-LOG.md`, 2026-11-20).
   - Never re-enable Nest's global `bodyParser` — middleware parsing breaks contract check ordering (commit `42270d4`).
+  - Never import directly from transitive packages like `'express'` in `apps/api` — pnpm's strict `node_modules` fails typecheck and lint (`AI-LOG.md`, 2026-11-22, commit `35d4c98`).
+  - Never put `Read(.env.*)` in `.claude/settings.json` `deny` — `deny` overrides `allow` and would block reading `.env.example` (`AI-LOG.md`, 2026-11-24, commit `8f0923b`).
+  - Never change the `Gitleaks` CI job to a shallow checkout or PR-only scan — keep `fetch-depth: 0` with `gitleaks git /repo --redact` so every run verifies the full git history (`AI-LOG.md`, 2026-11-24, commit `08dde18`).
   - Never commit `.env`, keys, or `.claude/settings.local.json`.
 
 ## Permissions
