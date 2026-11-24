@@ -4,9 +4,10 @@ An account of where an AI assistant did part of the work on AI Travel Planner, a
 
 ## Tools
 
-| Tool                          | Used for                                                        |
-| ----------------------------- | --------------------------------------------------------------- |
-| Claude Code (Claude Opus 5.5) | Reading the brief and the rubric, the README, the harness setup |
+| Tool                          | Used for                                                                                      |
+| ----------------------------- | --------------------------------------------------------------------------------------------- |
+| Claude Code (Claude Opus 5.5) | Reading the brief and the rubric, the README, the scaffold/CI, A1, B1 review                  |
+| Antigravity                   | B1 API harness (Prisma schema, Supabase auth guard, problem filter), B2 rules, B3 gitleaks CI |
 
 ## The LLM feature in our product
 
@@ -61,3 +62,39 @@ Kept: the sections of the example contract; the ownership table (401, then 404 f
 Changed: the assistant first called "every member within the lowest cap in the group" its own reading of the brief and an open question. The PA#3 rubric says the validator follows `eval.mjs` with exactly that rule, so it is the graded rule, not an interpretation. The draft also said a member with no cap is held only to the group total, which contradicts that rule: they are still held to the lowest cap the others set. We fixed the sentence.
 Rejected: nothing in this draft. We weighed whether the lowest-cap rule is realistic (people order different dishes) and kept it, because it is the rule the grader scores.
 By hand: reviewing and confirming the seven choices the brief leaves open (UUID ids, `null`, the 0 to `totalVnd` range, which plans count as affected, never clearing the flag, check order, no `If-Match`). Still to check: whether `eval.mjs` ignores members with no cap when it finds the lowest cap, once `travel-eval/README.md` is published.
+
+## 2026-11-22 — API harness, Prisma schema, and Supabase auth guard (B1)
+
+Tool: Antigravity (initial B1 implementation), Claude Code (review and body-reading follow-up).
+Asked for: minimal Prisma models (`User`, `Group`, `GroupMember`, `Plan`) with migration, a Supabase JWT auth guard verifiable offline in tests, a global RFC 9457 `application/problem+json` exception filter, and a contract-test harness (`createTestApp`, `resetDatabase`, local ES256 key signing).
+Kept: `BigInt` for VND money columns (`totalVnd`, `capVnd`, `highestMemberSpendVnd`) so values up to `Number.MAX_SAFE_INTEGER` do not overflow PostgreSQL `int4`; `GroupMember.updatedAt` without `@updatedAt` so idempotent PUTs keep the timestamp unchanged; `jose` with lazy JWKS lookup (remote via `SUPABASE_URL`, local override via `SUPABASE_JWKS_JSON` in tests) and `requiredClaims: ['exp', 'sub']`; `ProblemException` and `ProblemDetailsFilter` registered via `APP_FILTER` with `WWW-Authenticate: Bearer` on 401; `createTestApp()` and `createLocalAuthEnv()` test helpers.
+Changed: the first draft imported `Request` and `Response` directly from `'express'`, which failed `tsc` and ESLint under pnpm's strict `node_modules` because `@types/express` is transitive; we replaced them with minimal structural interfaces instead of adding another dependency. Peer review of PR #3 then caught two real gaps before A2: `SUPABASE_JWKS_JSON` was read in `SupabaseAuthService` but missing from `.env.example` (fixed in commit `dd0de25`, now covered by `no-server-secrets`), and Nest's default Express `bodyParser` ran before guards, returning `400 invalid-json` on a malformed body with no token instead of `401` (fixed in commit `42270d4` by sharing `APP_OPTIONS = { bodyParser: false }` between `main.ts` and `test-app.ts` and reading JSON bodies via `readJsonBody(req)` with a 16 KB cap, paired with contract commit `a77f5a0`).
+Rejected: leaving `SUPABASE_JWKS_JSON` out of `.env.example` as a test-only variable — every `process.env` variable must appear in `.env.example` so `no-server-secrets` guards it. Also rejected keeping the `entity.parse.failed` branch in `ProblemDetailsFilter` once global `bodyParser` was turned off.
+By hand: local Docker PostgreSQL `.env` setup, reviewing the PR across both teammates, and deciding to disable global `bodyParser` so runtime and test check order match the contract.
+
+## 2026-11-24 — rules file and assistant permissions (B2)
+
+Tool: Antigravity.
+Asked for: a rules file and three-tier permissions setup for PA#2 (B2) that works for both Antigravity and Claude Code without duplicating rules across two files.
+Kept: `AGENTS.md` as the single source of truth (Stack, Commands, Conventions, Never tied to brief section 3 and traceable repo incidents, plus the 3-tier Permissions table); `CLAUDE.md` containing only `@AGENTS.md` so Claude Code imports it without drift; `.claude/settings.json` enforcing `allow`, `ask`, and `deny` for Claude Code; updated `README.md` to reference all three files.
+Changed: instead of putting `Read(.env.*)` in `.claude/settings.json`'s `deny` list, we denied explicit secret patterns (`.env`, `.env.local`, `.env.development*`, `.env.production*`, `.env.test*`, `*.pem`, `*.key`) because Claude Code's `deny` overrides `allow` and `.env.*` would have blocked reading `.env.example`. We also included the repo's real incidents (`.swcrc`, TS 6.0.3 / Prisma 7.10.1 pins, `--max-warnings 0`, `bodyParser: false`, `SUPABASE_JWKS_JSON`) directly in `AGENTS.md` during B2 rather than waiting until B4.
+Rejected: duplicating the full rules in both `AGENTS.md` and `CLAUDE.md`, and creating a separate JSON permission file for Antigravity (which reads `AGENTS.md` directly and prompts for approvals in its UI).
+By hand: agreeing between both teammates on the single-source-of-truth layout (`AGENTS.md` + `CLAUDE.md` + `.claude/settings.json`), choosing English to match the repository, and reviewing the permission tiers before committing.
+
+## 2026-11-24 — secret scanning in CI (B3)
+
+Tool: Antigravity.
+Asked for: a `Gitleaks` job in `.github/workflows/ci.yml` that scans the entire git history for leaked secrets on every PR, push to `main`, and `pa*` tag, ready to be added as a required check on `main`.
+Kept: running the pinned official container image (`ghcr.io/gitleaks/gitleaks:v8.29.0`) with `actions/checkout@v7` (`fetch-depth: 0`), read-only mount (`:ro`), `--redact`, and `--verbose`, and documenting the exact same command in `README.md`.
+Changed: none in the workflow itself after design review; we made sure the command in `ci.yml` and `README.md` uses `"$PWD:/repo:ro"` identically so local Docker runs and CI stay in sync.
+Rejected: using `gitleaks/gitleaks-action@v2` with default settings, because on `pull_request` events it scans only the PR's commits rather than the full git history and adds an external action/license dependency.
+By hand: confirming the `.github/workflows/ci.yml` edit (ask-first permission tier in `AGENTS.md`), and enabling `Gitleaks` as a required status check in GitHub branch protection after merge.
+
+## 2026-11-24 — incident rules update in AGENTS.md (B4)
+
+Tool: Antigravity.
+Asked for: adding the real incidents encountered during B1–B3 to `AGENTS.md` with traceable commit and `AI-LOG.md` references, plus syncing the new `Gitleaks` command into the Commands table.
+Kept: three concise pitfall lines (strict pnpm transitive imports for `'express'`, `Read(.env.*)` blocking `.env.example` in `.claude/settings.json`, and keeping `Gitleaks` on `fetch-depth: 0` full-history scan) and the `Gitleaks` command row, keeping `AGENTS.md` under 70 lines.
+Changed: fast-forwarded the branch to `origin/main` first because B3 (`e4a7d24`) had just merged.
+Rejected: turning `AGENTS.md` into a long incident dump — kept each rule to one line with its commit/log citation.
+By hand: choosing to record B1–B3 incidents now and revisit `AGENTS.md` if A2–A4 surface any new pitfalls.

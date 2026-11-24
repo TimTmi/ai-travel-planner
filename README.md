@@ -60,15 +60,16 @@ pnpm dev                      # starts web and api
 
 Each check is one command. CI runs exactly these commands, each as its own job, on every pull request to `main`, on every push to `main` and on every `pa*` tag:
 
-| Check          | Command              |
-| -------------- | -------------------- |
-| Lint           | `pnpm lint`          |
-| Format check   | `pnpm format:check`  |
-| Type check     | `pnpm typecheck`     |
-| Tests          | `pnpm test`          |
-| Contract tests | `pnpm test:contract` |
+| Check          | Command                                                                                             |
+| -------------- | --------------------------------------------------------------------------------------------------- |
+| Lint           | `pnpm lint`                                                                                         |
+| Format check   | `pnpm format:check`                                                                                 |
+| Type check     | `pnpm typecheck`                                                                                    |
+| Tests          | `pnpm test`                                                                                         |
+| Contract tests | `pnpm test:contract`                                                                                |
+| Gitleaks       | `docker run --rm -v "$PWD:/repo:ro" ghcr.io/gitleaks/gitleaks:v8.29.0 git /repo --redact --verbose` |
 
-`pnpm test` covers the unit tests, which need no database and never call a real model. `pnpm test:contract` starts the real API against the database in `DATABASE_URL`, so run `docker compose up -d db` and `pnpm db:migrate` first; CI gives it a throwaway PostgreSQL. To fix formatting locally, run `pnpm format`.
+`pnpm test` covers the unit tests, which need no database and never call a real model. `pnpm test:contract` starts the real API against the database in `DATABASE_URL`, so run `docker compose up -d db` and `pnpm db:migrate` first; CI gives it a throwaway PostgreSQL. `Gitleaks` scans the full git history for leaked secrets via Docker (`--redact` keeps any finding out of logs). To fix formatting locally, run `pnpm format`.
 
 The CI workflow is in [`.github/workflows/ci.yml`](.github/workflows/ci.yml). `main` is protected: every check above must pass before a pull request can merge, and nobody pushes to `main` directly.
 
@@ -95,7 +96,7 @@ Rules the code enforces (fixed for every team by section 3 of the class brief):
 
 ## Working with an AI assistant
 
-The rules our coding assistant follows, including its allowed / ask-first / never permissions, are in [`CLAUDE.md`](CLAUDE.md). What the assistant did, and what we changed or rejected, is logged in [`AI-LOG.md`](AI-LOG.md).
+The rules our coding assistants follow, including the allowed / ask-first / never permissions, live in [`AGENTS.md`](AGENTS.md) (imported by [`CLAUDE.md`](CLAUDE.md) and enforced for Claude Code in [`.claude/settings.json`](.claude/settings.json)). What the assistants did, and what we changed or rejected, is logged in [`AI-LOG.md`](AI-LOG.md).
 
 ## Course submissions
 
