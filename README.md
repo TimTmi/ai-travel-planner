@@ -23,10 +23,14 @@ This is the class project for CSC13114 (Advanced Web Application Development), c
 | Monorepo      | pnpm workspaces      |
 
 ```
-apps/web     Next.js frontend (holds no secrets and makes no model calls)
-apps/api     NestJS backend (agent, tools, validator, Prisma)
-docs/        endpoint contracts
+apps/web        Next.js frontend (holds no secrets and makes no model calls)
+apps/api        NestJS backend (agent, tools, validator, Prisma)
+docs/contract   endpoint contracts
+docs/topic      the class brief for AI Travel Planner
+docs/PAs        each checkpoint's rubric and our plan for it
 ```
+
+`docs/topic` and `docs/PAs` are copies of course documents. We keep them in the repo on purpose: the contract, the tests and our plans cite them, and the brief is the source of the fixed rules our code enforces. They are reference material, not our work.
 
 ### Sign-in
 

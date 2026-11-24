@@ -6,7 +6,7 @@ An account of where an AI assistant did part of the work on AI Travel Planner, a
 
 | Tool                          | Used for                                                                                      |
 | ----------------------------- | --------------------------------------------------------------------------------------------- |
-| Claude Code (Claude Opus 5.5) | Reading the brief and the rubric, the README, the scaffold/CI, A1, B1 review                  |
+| Claude Code (Claude Opus 5.5) | Reading the brief and the rubric, the README, the scaffold/CI, A1, B1 review, A2, A3          |
 | Antigravity                   | B1 API harness (Prisma schema, Supabase auth guard, problem filter), B2 rules, B3 gitleaks CI |
 
 ## The LLM feature in our product
@@ -24,7 +24,7 @@ Tool: Claude Code.
 Asked for: a README that covers what the brief and the PA#2 rubric require.
 Kept: the structure, the one-command-per-check table, the fixed rules from section 3 of the brief, and the OpenStreetMap / Wikimedia / Open-Meteo credits.
 Changed: the setup said `corepack enable`, but corepack is no longer bundled with Node 25+ and was missing on our machine, so it now says `npm install -g pnpm`. The spending cap first said "10 USD on the API key", but Fireworks has no per-key limit, so it now names the 25 USD account limit we actually set.
-Rejected: the dev-server ports and the contract-test folder path. Both were guesses about code that does not exist yet, so we removed them before they could go stale. We also removed the link to the class brief, because we keep course documents out of the public repo.
+Rejected: the dev-server ports and the contract-test folder path. Both were guesses about code that does not exist yet, so we removed them before they could go stale. We also removed the link to the class brief, because we keep course documents out of the public repo. (Later reversed: the brief and the rubrics are now in the repo; see the 2026-11-24 entry on course documents.)
 By hand: the model and provider choice, the spending limit in the Fireworks dashboard, and the repo URL.
 
 ## 2026-11-20 — package manager
@@ -98,3 +98,24 @@ Kept: three concise pitfall lines (strict pnpm transitive imports for `'express'
 Changed: fast-forwarded the branch to `origin/main` first because B3 (`e4a7d24`) had just merged.
 Rejected: turning `AGENTS.md` into a long incident dump — kept each rule to one line with its commit/log citation.
 By hand: choosing to record B1–B3 incidents now and revisit `AGENTS.md` if A2–A4 surface any new pitfalls.
+
+## 2026-11-22 — spending-cap contract tests (A2)
+
+Tool: Claude Code.
+Asked for: contract tests for `PUT /v1/groups/{groupId}/members/{userId}/spending-cap` that follow `docs/contract/spending-cap.md` section by section, with expected values written out from the contract rather than imported from `src/`, committed before the endpoint exists so the PR goes red.
+Kept: one test per problem type, each checking the status, `application/problem+json` and every member of the body; 401 for a missing, non-Bearer, expired, wrongly signed, wrong-audience, wrong-issuer and `sub`-less token; the ownership rule both ways (403 for another member, 404 for a non-member, the same 404 as for a missing group); the order of checks; the 16 KB limit; affected plans; repeated PUTs. Commit `6910681`, PR #6. CI went red on Contract tests only (55 failed, 11 passed) and the merge button stayed locked.
+Changed: one test was wrong, and we only found it in A3. "stores the cap and answers 200" set `capVnd` to 700,000 and expected no affected plans, but the seed has a saved plan at 750,000, which section 4 says must be listed. The other affected-plans tests already used the contract's rule. We fixed the test in its own commit (`a3ebcb6`), with no code and no contract change, before the implementation commit.
+Rejected: none.
+
+## 2026-11-24 — spending-cap implementation (A3)
+
+Tool: Claude Code.
+Asked for: the endpoint, as a separate commit on PR #6, without touching the tests in the same commit, including the two fixes left over from the 2026-11-22 review: check in the contract's order and never read the body before the 404 and 403 checks, and turn Prisma `BigInt` amounts into JSON numbers.
+Kept: a controller that runs the eight steps of section 5 in order (guard → membership 404 → ownership 403 → `readJsonBody` → `capVnd` rules → 422 against the group total) and a service that stores the cap and flags plans in one interactive transaction. `updatedAt` moves only when the value changes, so a repeated PUT returns the same body. Commit `29305d8`.
+Changed: the first run failed one test (65 of 66 passed): the 700,000 test above. The assistant traced it to the test, not the code: making the code pass it would have meant not listing a plan the contract says is affected. So the code stayed as the contract says and the test was fixed in a separate commit first.
+Rejected: changing the handler to satisfy the wrong test, and fixing the test in the same commit as the code; both would have hidden a contract question inside the commit that turns the PR green. Also rejected adding unit specs for the cap rules in the A3 commit, so that commit holds no test changes at all; the contract tests already cover every rule.
+
+## 2026-11-24 — course documents in the repo
+
+Tool: none.
+The class brief (`docs/topic/`) and the PA#2 rubric and plan (`docs/PAs/PA2/`) were committed with B1 (`35d4c98`) and the plan update (`d1c1116`). That contradicts our 2026-11-20 note that course documents stay out of the public repo. We decided to keep them, because the contract, the tests and our plans cite them, and the README now says that they are copies of course documents kept for reference.
