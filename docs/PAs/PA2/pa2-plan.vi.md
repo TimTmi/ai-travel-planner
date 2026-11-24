@@ -4,19 +4,19 @@ Hạn nộp: **Thứ Năm 26/11/2026, 22:00**. Endpoint đã chọn: `PUT /group
 
 ## Trạng thái
 
-| Phase                     | Trạng thái                                                                                                           |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| P0 · Scaffold + CI        | ✅ Xong (20/11). CI xanh tất cả các job                                                                              |
-| P1 · Bảo vệ `main`        | ✅ Đã bật, 6 check bắt buộc (thêm Gitleaks sau PR #8). Còn: ảnh chụp màn hình cho PA2.md                             |
-| A1 · Contract             | ✅ Xong (21/11), PR #2. Quy tắc body tối đa 16 KB thêm ở PR #4 (22/11)                                               |
-| A2 · Contract test        | ✅ Xong (22/11), PR #6, commit `6910681`. Contract tests đỏ (run 45323832020), merge bị chặn. Còn: ảnh chụp màn hình |
-| A3 · Implementation       | ✅ Code xong (24/11) trên PR #6: sửa test `a3ebcb6`, rồi implementation `29305d8`. Còn: push, CI xanh, merge         |
-| B1 · Harness              | ✅ Xong (22/11), PR #3. Các bản sửa sau review ở PR #5 (22/11)                                                       |
-| B2 · Quy tắc + quyền      | ✅ Xong (24/11), PR #7                                                                                               |
-| B3 · Gitleaks             | ✅ Xong (24/11), PR #8. Check bắt buộc trên `main`                                                                   |
-| B4 · Sự cố thật           | ✅ Xong (24/11), PR #9                                                                                               |
-| A4 · Cố tình phá contract | Chưa bắt đầu                                                                                                         |
-| D · Nộp bài               | Chưa bắt đầu. README đã ghi lý do giữ tài liệu môn học trong `docs/topic` và `docs/PAs`                              |
+| Phase                     | Trạng thái                                                                                                                       |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| P0 · Scaffold + CI        | ✅ Xong (20/11). CI xanh tất cả các job                                                                                          |
+| P1 · Bảo vệ `main`        | ✅ Đã bật, 6 check bắt buộc (thêm Gitleaks sau PR #8). Ảnh chụp `docs/pa2/branch-protection.png`                                 |
+| A1 · Contract             | ✅ Xong (21/11), PR #2. Quy tắc body tối đa 16 KB thêm ở PR #4 (22/11)                                                           |
+| A2 · Contract test        | ✅ Xong (22/11), PR #6, commit `6910681`. Contract tests đỏ (run 45323832020), merge bị chặn, ảnh chụp `docs/pa2/blocked-pr.png` |
+| A3 · Implementation       | ✅ Xong (24/11), PR #6: sửa test `a3ebcb6` (đỏ, run 45408728368), rồi implementation `29305d8` (xanh, run 45413730945). Đã merge |
+| B1 · Harness              | ✅ Xong (22/11), PR #3. Các bản sửa sau review ở PR #5 (22/11)                                                                   |
+| B2 · Quy tắc + quyền      | ✅ Xong (24/11), PR #7                                                                                                           |
+| B3 · Gitleaks             | ✅ Xong (24/11), PR #8. Check bắt buộc trên `main`                                                                               |
+| B4 · Sự cố thật           | ✅ Xong (24/11), PR #9                                                                                                           |
+| A4 · Cố tình phá contract | ✅ Xong (24/11), PR #11 (`0ad6241`). Contract tests đỏ (run 45420401170), đóng không merge                                       |
+| D · Nộp bài               | Đang làm: PR `docs/pa2-handin` thêm PA2.md, SELF_ASSESSMENT_REPORT.md và ảnh chụp. Sau đó fresh clone, tag, zip                  |
 
 ## Sơ đồ phụ thuộc
 

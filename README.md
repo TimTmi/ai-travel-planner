@@ -86,7 +86,7 @@ Our chosen endpoint is `PUT /v1/groups/{groupId}/members/{userId}/spending-cap`,
 - **Model:** GLM 5.3 Flash (`accounts/fireworks/models/glm-5p3-flash`) on Fireworks AI serverless, called only from `apps/api` with `FIREWORKS_API_KEY`.
 - **Price:** $0.15 per million input tokens and $0.50 per million output tokens (Fireworks list price, November 2026).
 - **Cost of one plan:** _TBD_, to be measured on the dev set. Our working estimate is about $0.01: up to 12 tool calls, roughly 60k input tokens and 5k output tokens.
-- **Spending cap:** the Fireworks account that owns `FIREWORKS_API_KEY` has a usage limit of 25 USD. Fireworks does not support a limit on a single key, so the cap is set on the account, and it covers every key on that account. When the limit is reached, Fireworks suspends the account and every call fails, so a runaway loop or a leaked key cannot cost more than 25 USD.
+- **Spending cap:** the Fireworks account that owns `FIREWORKS_API_KEY` has a usage limit of 25 USD. Fireworks does not support a limit on a single key, so the cap is set on the account, and it covers every key on that account. When the limit is reached, Fireworks suspends the account and every call fails, so a runaway loop or a leaked key cannot cost more than 25 USD. Screenshot of the limit: [`docs/pa2/fireworks-usage-limit.png`](docs/pa2/fireworks-usage-limit.png).
 
 The same numbers are recorded in [`AI-LOG.md`](AI-LOG.md).
 
