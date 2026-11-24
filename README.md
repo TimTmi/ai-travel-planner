@@ -95,7 +95,7 @@ Rules the code enforces (fixed for every team by section 3 of the class brief):
 
 ## Working with an AI assistant
 
-The rules our coding assistant follows, including its allowed / ask-first / never permissions, are in [`CLAUDE.md`](CLAUDE.md). What the assistant did, and what we changed or rejected, is logged in [`AI-LOG.md`](AI-LOG.md).
+The rules our coding assistants follow, including the allowed / ask-first / never permissions, live in [`AGENTS.md`](AGENTS.md) (imported by [`CLAUDE.md`](CLAUDE.md) and enforced for Claude Code in [`.claude/settings.json`](.claude/settings.json)). What the assistants did, and what we changed or rejected, is logged in [`AI-LOG.md`](AI-LOG.md).
 
 ## Course submissions
 
