@@ -42,10 +42,9 @@ export class SpendingCapController {
       throw new ProblemException('not-found', 'The requested resource was not found.');
     }
 
-    // 3. Ownership: only the caller's own cap.
-    if (rawUserId.toLowerCase() !== callerId) {
-      throw new ProblemException('forbidden', 'A member may set only their own spending cap.');
-    }
+    // DELIBERATE CONTRACT BREAK (PA#2 A4, never merged): the ownership check is gone, so any
+    // member can set any other member's cap. Contract section 2 requires 403 forbidden here.
+    const target = { ...membership, userId: rawUserId.toLowerCase() };
 
     // 4-6. Size, JSON, then field rules. The body is read only now, after 401/404/403.
     const capVnd = parseCapVnd(await readJsonBody(req));
@@ -64,6 +63,6 @@ export class SpendingCapController {
     }
 
     // 8. Store and flag plans in one transaction.
-    return this.spendingCaps.setCap(membership, capVnd);
+    return this.spendingCaps.setCap(target, capVnd);
   }
 }
