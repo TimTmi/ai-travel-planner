@@ -119,3 +119,11 @@ Rejected: changing the handler to satisfy the wrong test, and fixing the test in
 
 Tool: none.
 The class brief (`docs/topic/`) and the PA#2 rubric and plan (`docs/PAs/PA2/`) were committed with B1 (`35d4c98`) and the plan update (`d1c1116`). That contradicts our 2026-11-20 note that course documents stay out of the public repo. We decided to keep them, because the contract, the tests and our plans cite them, and the README now says that they are copies of course documents kept for reference.
+
+## 2026-11-24 — deliberate contract break (A4)
+
+Tool: Claude Code.
+Asked for: one pull request that breaks the spending-cap contract on purpose, to show that the required Contract tests check catches it, then close it unmerged.
+Kept: removing the ownership check (contract section 2, step 3 of section 5), so any member could set another member's cap. Only `apps/api/src/groups/spending-cap.controller.ts` changed; the contract and the tests did not. PR #11, commit `0ad6241`. Lint, Format check, Type check, Tests and Gitleaks stayed green, which shows a break like this gets past every check except the contract tests. Contract tests went red on the six ownership-rule tests (run 45420401170), the merge was blocked, and the PR was closed unmerged.
+Changed: nothing.
+Rejected: returning plain JSON errors instead of problem details as the break. It would also go red, but the ownership rule is the part of this contract a stranger most needs to rely on, so it is the better proof.
