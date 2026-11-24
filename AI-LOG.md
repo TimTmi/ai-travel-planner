@@ -89,3 +89,12 @@ Kept: running the pinned official container image (`ghcr.io/gitleaks/gitleaks:v8
 Changed: none in the workflow itself after design review; we made sure the command in `ci.yml` and `README.md` uses `"$PWD:/repo:ro"` identically so local Docker runs and CI stay in sync.
 Rejected: using `gitleaks/gitleaks-action@v2` with default settings, because on `pull_request` events it scans only the PR's commits rather than the full git history and adds an external action/license dependency.
 By hand: confirming the `.github/workflows/ci.yml` edit (ask-first permission tier in `AGENTS.md`), and enabling `Gitleaks` as a required status check in GitHub branch protection after merge.
+
+## 2026-11-24 — incident rules update in AGENTS.md (B4)
+
+Tool: Antigravity.
+Asked for: adding the real incidents encountered during B1–B3 to `AGENTS.md` with traceable commit and `AI-LOG.md` references, plus syncing the new `Gitleaks` command into the Commands table.
+Kept: three concise pitfall lines (strict pnpm transitive imports for `'express'`, `Read(.env.*)` blocking `.env.example` in `.claude/settings.json`, and keeping `Gitleaks` on `fetch-depth: 0` full-history scan) and the `Gitleaks` command row, keeping `AGENTS.md` under 70 lines.
+Changed: fast-forwarded the branch to `origin/main` first because B3 (`e4a7d24`) had just merged.
+Rejected: turning `AGENTS.md` into a long incident dump — kept each rule to one line with its commit/log citation.
+By hand: choosing to record B1–B3 incidents now and revisit `AGENTS.md` if A2–A4 surface any new pitfalls.
