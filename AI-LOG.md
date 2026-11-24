@@ -4,10 +4,10 @@ An account of where an AI assistant did part of the work on AI Travel Planner, a
 
 ## Tools
 
-| Tool                          | Used for                                                                      |
-| ----------------------------- | ----------------------------------------------------------------------------- |
-| Claude Code (Claude Opus 5.5) | Reading the brief and the rubric, the README, the scaffold/CI, A1, B1 review  |
-| Antigravity                   | B1 API harness (Prisma schema, Supabase auth guard, problem filter), B2 rules |
+| Tool                          | Used for                                                                                      |
+| ----------------------------- | --------------------------------------------------------------------------------------------- |
+| Claude Code (Claude Opus 5.5) | Reading the brief and the rubric, the README, the scaffold/CI, A1, B1 review                  |
+| Antigravity                   | B1 API harness (Prisma schema, Supabase auth guard, problem filter), B2 rules, B3 gitleaks CI |
 
 ## The LLM feature in our product
 
@@ -80,3 +80,12 @@ Kept: `AGENTS.md` as the single source of truth (Stack, Commands, Conventions, N
 Changed: instead of putting `Read(.env.*)` in `.claude/settings.json`'s `deny` list, we denied explicit secret patterns (`.env`, `.env.local`, `.env.development*`, `.env.production*`, `.env.test*`, `*.pem`, `*.key`) because Claude Code's `deny` overrides `allow` and `.env.*` would have blocked reading `.env.example`. We also included the repo's real incidents (`.swcrc`, TS 6.0.3 / Prisma 7.10.1 pins, `--max-warnings 0`, `bodyParser: false`, `SUPABASE_JWKS_JSON`) directly in `AGENTS.md` during B2 rather than waiting until B4.
 Rejected: duplicating the full rules in both `AGENTS.md` and `CLAUDE.md`, and creating a separate JSON permission file for Antigravity (which reads `AGENTS.md` directly and prompts for approvals in its UI).
 By hand: agreeing between both teammates on the single-source-of-truth layout (`AGENTS.md` + `CLAUDE.md` + `.claude/settings.json`), choosing English to match the repository, and reviewing the permission tiers before committing.
+
+## 2026-11-24 — secret scanning in CI (B3)
+
+Tool: Antigravity.
+Asked for: a `Gitleaks` job in `.github/workflows/ci.yml` that scans the entire git history for leaked secrets on every PR, push to `main`, and `pa*` tag, ready to be added as a required check on `main`.
+Kept: running the pinned official container image (`ghcr.io/gitleaks/gitleaks:v8.29.0`) with `actions/checkout@v7` (`fetch-depth: 0`), read-only mount (`:ro`), `--redact`, and `--verbose`, and documenting the exact same command in `README.md`.
+Changed: none in the workflow itself after design review; we made sure the command in `ci.yml` and `README.md` uses `"$PWD:/repo:ro"` identically so local Docker runs and CI stay in sync.
+Rejected: using `gitleaks/gitleaks-action@v2` with default settings, because on `pull_request` events it scans only the PR's commits rather than the full git history and adds an external action/license dependency.
+By hand: confirming the `.github/workflows/ci.yml` edit (ask-first permission tier in `AGENTS.md`), and enabling `Gitleaks` as a required status check in GitHub branch protection after merge.
